@@ -1,0 +1,49 @@
+CREATE DATABASE IF NOT EXISTS bankdb;
+USE bankdb;
+
+CREATE TABLE IF NOT EXISTS users (
+  user_id INT AUTO_INCREMENT PRIMARY KEY,
+  full_name VARCHAR(100) NOT NULL,
+  email VARCHAR(100) UNIQUE NOT NULL,
+  username VARCHAR(50) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  role ENUM('CUSTOMER','ADMIN') DEFAULT 'CUSTOMER'
+);
+
+CREATE TABLE IF NOT EXISTS accounts (
+  account_id INT AUTO_INCREMENT PRIMARY KEY,
+  account_number VARCHAR(20) UNIQUE NOT NULL,
+  user_id INT NOT NULL,
+  account_type ENUM('SAVINGS','CURRENT') NOT NULL,
+  balance DECIMAL(15,2) DEFAULT 0.00,
+  status ENUM('ACTIVE','BLOCKED') DEFAULT 'ACTIVE',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE IF NOT EXISTS transactions (
+  txn_id INT AUTO_INCREMENT PRIMARY KEY,
+  account_id INT NOT NULL,
+  txn_type ENUM('DEPOSIT','WITHDRAW','TRANSFER_IN','TRANSFER_OUT') NOT NULL,
+  amount DECIMAL(15,2) NOT NULL,
+  balance_after DECIMAL(15,2),
+  txn_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (account_id) REFERENCES accounts(account_id)
+);
+
+CREATE TABLE IF NOT EXISTS services (
+  service_id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  service_type ENUM('LOAN','INVESTMENT') NOT NULL,
+  amount DECIMAL(15,2) NOT NULL,
+  status ENUM('PENDING','APPROVED','REJECTED') DEFAULT 'PENDING',
+  applied_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE IF NOT EXISTS system_settings (
+  setting_key VARCHAR(50) PRIMARY KEY,
+  setting_value VARCHAR(100) NOT NULL
+);
+
+INSERT IGNORE INTO system_settings VALUES ('min_balance','500'), ('daily_transfer_limit','50000');
